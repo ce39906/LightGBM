@@ -3,18 +3,25 @@
 
 #include <LightGBM/meta.h>
 #include <LightGBM/config.h>
+#include <LightGBM/utils/common.h>
+#include <LightGBM/utils/text_reader.h>
+#include <LightGBM/utils/openmp_wrapper.h>
+
+#include <LightGBM/network.h>
+#include <LightGBM/dataset.h>
+#include <LightGBM/dataset_loader.h>
+#include <LightGBM/boosting.h>
+#include <LightGBM/objective_function.h>
+#include <LightGBM/prediction_early_stop.h>
+#include <LightGBM/metric.h>
+#include <LightGBM/predictor.hpp>
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <iostream>
 
 namespace LightGBM {
-
-class DatasetLoader;
-class Dataset;
-class Boosting;
-class ObjectiveFunction;
-class Metric;
-
 /*!
 * \brief The main entrance of LightGBM. this application has two tasks:
 *        Train and Predict.
@@ -31,6 +38,17 @@ public:
 
   /*! \brief To call this funciton to run application*/
   inline void Run();
+  
+  /*! \brief Initializations before prediction */
+  void InitPredict();
+  
+  std::string Predict(const char* sample, const char sep);
+
+  std::string Predict(const std::vector<std::pair<int, double>>& indexed_features);
+
+  std::string Predict(const std::vector<double>& features);
+
+  std::vector<std::string> BatchPredict(const std::vector<std::vector<double>>& batch_features);
 
 private:
 
@@ -45,9 +63,6 @@ private:
 
   /*! \brief Main Training logic */
   void Train();
-
-  /*! \brief Initializations before prediction */
-  void InitPredict();
 
   /*! \brief Main predicting logic */
   void Predict();
@@ -69,6 +84,8 @@ private:
   std::unique_ptr<Boosting> boosting_;
   /*! \brief Training objective function */
   std::unique_ptr<ObjectiveFunction> objective_fun_;
+  /*! \brief Trained predictor */
+  std::unique_ptr<Predictor> predictor_;
 };
 
 

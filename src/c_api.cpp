@@ -13,6 +13,7 @@
 #include <LightGBM/config.h>
 #include <LightGBM/prediction_early_stop.h>
 #include <LightGBM/network.h>
+#include <LightGBM/predictor.hpp>
 
 #include <cstdio>
 #include <vector>
@@ -23,7 +24,6 @@
 #include <mutex>
 #include <functional>
 
-#include "./application/predictor.hpp"
 
 namespace LightGBM {
 

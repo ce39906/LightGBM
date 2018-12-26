@@ -112,6 +112,8 @@ void GetTaskType(const std::unordered_map<std::string, std::string>& params, Tas
       *task = TaskType::kConvertModel;
     } else if (value == std::string("refit") || value == std::string("refit_tree")) {
       *task = TaskType::KRefitTree;
+    } else if (value == std::string("online") || value == std::string("online_predict")) {
+      *task = TaskType::kOnlinePredict;
     } else {
       Log::Fatal("Unknown task type %s", value.c_str());
     }

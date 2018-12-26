@@ -1,20 +1,5 @@
 #include <LightGBM/application.h>
 
-#include <LightGBM/utils/common.h>
-#include <LightGBM/utils/text_reader.h>
-
-#include <LightGBM/network.h>
-#include <LightGBM/dataset.h>
-#include <LightGBM/dataset_loader.h>
-#include <LightGBM/boosting.h>
-#include <LightGBM/objective_function.h>
-#include <LightGBM/prediction_early_stop.h>
-#include <LightGBM/metric.h>
-
-#include "predictor.hpp"
-
-#include <LightGBM/utils/openmp_wrapper.h>
-
 #include <cstdio>
 #include <ctime>
 
@@ -33,7 +18,8 @@ Application::Application(int argc, char** argv) {
   if (config_.num_threads > 0) {
     omp_set_num_threads(config_.num_threads);
   }
-  if (config_.data.size() == 0 && config_.task != TaskType::kConvertModel) {
+  if (   config_.data.size() == 0 
+      && (config_.task != TaskType::kConvertModel && config_.task != TaskType::kOnlinePredict)) {
     Log::Fatal("No training/prediction data, application quit");
   }
   omp_set_nested(0);
@@ -254,6 +240,10 @@ void Application::Predict() {
 void Application::InitPredict() {
   boosting_.reset(
     Boosting::CreateBoosting("gbdt", config_.input_model.c_str()));
+  predictor_.reset(new Predictor(boosting_.get(), config_.num_iteration_predict,
+                                 config_.predict_raw_score, config_.predict_leaf_index,
+                                 config_.predict_contrib, config_.pred_early_stop,
+                                 config_.pred_early_stop_freq, config_.pred_early_stop_margin));
   Log::Info("Finished initializing prediction, total used %d iterations", boosting_->GetCurrentIteration());
 }
 
@@ -263,5 +253,21 @@ void Application::ConvertModel() {
   boosting_->SaveModelToIfElse(-1, config_.convert_model.c_str());
 }
 
+std::string Application::Predict(const char* sample, const char sep) {
+    return predictor_->Predict(sample, sep);
+}
+
+std::string Application::Predict(const std::vector<std::pair<int, double>>& indexed_features) {
+    return predictor_->Predict(indexed_features);
+}
+
+std::string Application::Predict(const std::vector<double>& features) {
+    return predictor_->Predict(features);
+}
+
+std::vector<std::string> 
+Application::BatchPredict(const std::vector<std::vector<double>>& batch_features) {
+    return predictor_->BatchPredict(batch_features);
+}
 
 }  // namespace LightGBM

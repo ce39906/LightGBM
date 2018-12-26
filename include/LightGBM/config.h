@@ -20,7 +20,7 @@ namespace LightGBM {
 
 /*! \brief Types of tasks */
 enum TaskType {
-  kTrain, kPredict, kConvertModel, KRefitTree
+  kTrain, kPredict, kConvertModel, KRefitTree, kOnlinePredict
 };
 const int kDefaultNumLeaves = 31;
 
